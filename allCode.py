@@ -1,14 +1,15 @@
 import threading as th
 import telebot
-
 from telebot import types
-
+import time
 import json
 import requests
 
 TOKEN = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
 URL = "https://api.telegram.org/bot" + TOKEN + "/"
+Menu = 'Puedes utilizar los siguientes comandos : \n\n/ayuda - Guia para utilizar el bot. \n/info - Informacion De interes \n/hola - Saludo del Bot \n/piensa3D - Informacion sobre Piensa3D \n\n'
 
+tb = telebot.TeleBot(TOKEN)
 
 def update():
     # Llamar al metodo getUpdates del bot haciendo una peticion HTTPS (se obtiene una respuesta codificada)
@@ -35,12 +36,9 @@ def leer_mensaje():
     texto = mensajes["result"][indice]["message"]["text"]
     persona = mensajes["result"][indice]["message"]["from"]["first_name"]
     id_chat = mensajes["result"][indice]["message"]["chat"]["id"]
-
-    # Mostrar esta informacion por pantalla
-    t
-    print(persona + " (id: " + str(id_chat) + ") ha escrito: " + texto)
+    tb.send_message(id_chat, f'Hola{persona}, soy el bot PanaMiguel, y estoy aquí para ayudarte a comprar tu boleto de vuelo')
+    #print(persona + " (id: " + str(id_chat) + ") ha escrito: " + texto)
 
 
 # Llamar a la funcion "leer_mensaje()"
-c = leer_mensaje()
-print((type(c)))
+leer_mensaje()
