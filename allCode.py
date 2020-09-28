@@ -4,13 +4,15 @@ from telebot import types
 import time
 import json
 import requests
+import telegram
+import telegram.ext
 
 TOKEN = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
 URL = "https://api.telegram.org/bot" + TOKEN + "/"
-Menu = 'Puedes utilizar los siguientes comandos : \n\n/ayuda - Guia para utilizar el bot. \n/info - Informacion De interes \n/hola - Saludo del Bot \n/piensa3D - Informacion sobre Piensa3D \n\n'
+Menu = '¿Qué deseas hacer?: \n\n/Buscar  \n/info - Informacion De interes \n/hola - Saludo del Bot \n/piensa3D - Informacion sobre Piensa3D \n\n'
 
-tb = telebot.TeleBot(TOKEN)
-
+bot = telebot.TeleBot(TOKEN)
+@bot.message_handler(commands=['start'])
 def update():
     # Llamar al metodo getUpdates del bot haciendo una peticion HTTPS (se obtiene una respuesta codificada)
     respuesta = requests.get(URL + "getUpdates")
@@ -24,8 +26,8 @@ def update():
     # Devolver este diccionario
     return mensajes_diccionario
 
-
 def leer_mensaje():
+
     # Llamar update() y guardar el diccionario con los mensajes recientes
     mensajes = update()
 
@@ -36,9 +38,26 @@ def leer_mensaje():
     texto = mensajes["result"][indice]["message"]["text"]
     persona = mensajes["result"][indice]["message"]["from"]["first_name"]
     id_chat = mensajes["result"][indice]["message"]["chat"]["id"]
-    tb.send_message(id_chat, f'Hola{persona}, soy el bot PanaMiguel, y estoy aquí para ayudarte a comprar tu boleto de vuelo')
+
+    bot.send_message(id_chat, f'Hola{persona}, soy el bot PanaMiguel, y estoy aquí para ayudarte a comprar tu boleto de vuelo')
+    bot.send_message(id_chat, Menu)
+
     #print(persona + " (id: " + str(id_chat) + ") ha escrito: " + texto)
 
+def start(bot, update):
+    update.message.reply_text("Hola, ¿En qué puedo ayudarte? 😀")
 
-# Llamar a la funcion "leer_mensaje()"
-leer_mensaje()
+
+def main():
+
+    updater = telegram.ext.Updater("512361253:AABCjU33hDwcsWV8n6Z9kYbBqLGhi3e-APc")
+    dp = updater.dispatcher
+
+    dp.add_handler(telegram.ext.CommandHandler("start", start))
+    updater.start_polling()
+    updater.idle()
+if __name__ == '__main__':
+    main()
+
+
+
