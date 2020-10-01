@@ -3,18 +3,24 @@ import telebot
 from telebot import types
 import time
 import json
+import numpy as np
+
 from bs4 import BeautifulSoup
 import requests
 import telegram
 from telegram.ext import *
-TOKEN = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
-URL = "https://api.telegram.org/bot" + TOKEN + "/"
-Menu = '¿Qué deseas hacer?: \n\n/Tutorial - Ver instrucciones \n/Comprar - Comprar vuelo  \n/Info - Información de aerolíneas y más \n/Cerrar chat\n\n'
+from telegram.ext import CommandHandler
 
-bot = telegram.Bot(token = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ')
-mibot = telebot.TeleBot(TOKEN)
-updater = Updater(TOKEN)
-botUpdater = updater
+
+def Updates():
+    updates = list()
+    while True:
+        if len(updates) > 0:
+            break
+
+        else:
+            updates = bot.get_updates()
+
 
 
 def datosAirlines():
@@ -25,12 +31,13 @@ def datosAirlines():
         iataCodes = row.findAll('td')[0]  # busca el campo donde haya la puntuación de cada etiqueta
         airlineCodes = row.findAll('td')[1]  # busca el campo donde haya la puntuación de cada etiqueta
         paises = row.findAll('td')[4]  # busca el campo donde haya la puntuación de cada etiqueta
-        listaIata.append(iataCodes.text)
+        listaIata.append('/'+iataCodes.text)
         listaAirlines.append(airlineCodes.text)
         listPaises.append(paises.text)
 
 
 def start(bot, update, pass_chat_data = True):
+
 
     miID = update.message.chat.id
     c.append(str(miID))
@@ -41,27 +48,36 @@ def start(bot, update, pass_chat_data = True):
     bot.sendMessage(chat_id = miID, text = Menu)
 
 
+
 def comprar(bot, update):
-
-
     miID = update.message.chat.id
-    flag = False
     bot.sendMessage(chat_id=miID, text='por favor ingresa un dato')
-    while flag == False:
-        updates = bot.get_updates()
-        [mensajes.append(u.message.text) for u in updates]
-        if len(mensajes) > 0:
-            flag = True
+    while True:
+        if (update.message.text) == 'ola':
+            update.message.reply_text("Prefiero comer pizza")
+            break
         else:
-            updates = bot.get_updates()
-            [mensajes.append(u.message.text) for u in updates]
-    print(mensajes)
-    print(listaIata)
+            update.message.reply_text('mal')
+            break
 
 
 
 
 
+
+
+
+
+
+
+
+TOKEN = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
+URL = "https://api.telegram.org/bot" + TOKEN + "/"
+Menu = '¿Qué deseas hacer?: \n\n/Tutorial - Ver instrucciones \n/Comprar - Comprar vuelo  \n/Info - Información de aerolíneas y más \n/Cerrar chat\n\n'
+
+bot = telebot.TeleBot(TOKEN)
+updater = Updater(TOKEN)
+botUpdater = updater
 
 
 
@@ -70,21 +86,25 @@ listaAirlines = list()
 listPaises = list()
 mensajes = list()
 c =  list()
-texto = ''
+
+
+
+
+
+
 datosAirlines()
 start_handler = CommandHandler('start', start)
 comprar_handler = CommandHandler('comprar', comprar)
 dispatcher = botUpdater.dispatcher
 dispatcher.add_handler(start_handler)
-botUpdater.start_polling()
 dispatcher.add_handler(comprar_handler)
 
-botUpdater.idle()
+botUpdater.start_polling()
 
 
 
-while True:
-    pass
+
+
 
 
 
