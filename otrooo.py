@@ -1,5 +1,6 @@
 #print([u.message.chat_id for u in updates])
 import telegram
+
 mensajes = list()
 bot_token = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
 bot = telegram.Bot(bot_token)

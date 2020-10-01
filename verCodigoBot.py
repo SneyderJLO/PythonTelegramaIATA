@@ -1,3 +1,5 @@
+from bs4 import BeautifulSoup
+import requests
 import logging
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -16,8 +18,10 @@ def start(update, context):
                              ' \n/Info - Información de aerolíneas y más \n/Cerrar - Finalizar chat\n\n')
 
 
-def comprar(bot, context):
-
+def comprar(update, context):
+    datosAirlines()
+    update.message.reply_text('✈Por favor, ingresa el código IATA\nSi tienes dudas ingresa 👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
+    dp.add_handler(MessageHandler(Filters.text, pizza))
 
 
 def error(update, context):
@@ -26,14 +30,31 @@ def error(update, context):
 
 
 
-def pizza(update, context):
-  while True:
-    if(update.message.text) == 'ola':
-        update.message.reply_text("Prefiero comer pizza")
-        break
-    else:
-      update.message.reply_text('mal')
-      break
+def Origen(update, context):
+    while True:
+        origen = update.message.text.upper()
+        if origen in listaIata:
+            indice = listaIata.index(origen)
+            update.message.reply_text(f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
+            update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
+            print(indice)
+            break
+        else:
+            update.message.reply_text('mal')
+            break
+
+
+def datosAirlines():
+    sitioCodes = 'https://madavan.com.mx/codigo-iata-aerolineas/'
+    pagina = requests.get(sitioCodes)
+    soup = BeautifulSoup(pagina.content, 'html.parser')
+    for row in soup.findAll('table')[0].tbody.findAll('tr'):  # Validacion 2: se detiene cuando encuentra la primera tabla y todos los subcampos 'td'
+        iataCodes = row.findAll('td')[0]  # busca el campo donde haya la puntuación de cada etiqueta
+        airlineCodes = row.findAll('td')[1]  # busca el campo donde haya la puntuación de cada etiqueta
+        paises = row.findAll('td')[4]  # busca el campo donde haya la puntuación de cada etiqueta
+        listaIata.append(iataCodes.text)
+        listaAirlines.append(airlineCodes.text)
+        listPaises.append(paises.text)
 
 
 def sumar(update,context):
@@ -48,35 +69,36 @@ def sumar(update,context):
     except (ValueError):
         update.message.reply_text("por favor utilice dos numeros")
 
-def main():
+
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
-    updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
+
+listaIata = list()
+listaAirlines = list()
+listPaises = list()
+updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
 
     # Get the dispatcher to register handlers
-    dp = updater.dispatcher
+dp = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("sumar", sumar))
+dp.add_handler(CommandHandler("start", start))
+dp.add_handler(CommandHandler("comprar", comprar))
+dp.add_handler(CommandHandler("sumar", sumar))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, pizza))
+
 
     # log all errors
-    dp.add_error_handler(error)
+dp.add_error_handler(error)
 
     # Start the Bot
-    updater.start_polling()
+updater.start_polling()
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
+updater.idle()
 
-
-if __name__ == '__main__':
-    main()
