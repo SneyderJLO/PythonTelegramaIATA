@@ -12,20 +12,19 @@ def start(update, context):
    update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
                                        '\nTe ayudaré a realizar correctamente la compra de tu boleto de vuelo'
                                        '\nElige tu opción, dando click al comando o escribiéndolo')
-
-def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+   update.message.reply_text('¿Qué deseas hacer?: \n\n/Tutorial - Ver instrucciones \n/Comprar - Comprar vuelo '
+                             ' \n/Info - Información de aerolíneas y más \n/Cerrar - Finalizar chat\n\n')
 
 
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+def comprar(bot, context):
+
 
 
 def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
+
+
 
 def pizza(update, context):
   while True:
