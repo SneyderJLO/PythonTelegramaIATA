@@ -31,18 +31,23 @@ def error(update, context):
 
 
 def Origen(update, context):
-    while True:
+    flag = False
+    while flag == False:
         origen = update.message.text.upper()
         if origen in listaIata:
             indice = listaIata.index(origen)
             update.message.reply_text(f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
             update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
+            flag = True
             #dp.add_handler(MessageHandler(Filters.text, validacion(opcion, update)))
 
-            break
+            #break
         else:
+
             update.message.reply_text('No coincide el código')
+            flag = False
             break
+            #break
 
 '''def validacion(opcion, update):
     opcion = update.message.text
