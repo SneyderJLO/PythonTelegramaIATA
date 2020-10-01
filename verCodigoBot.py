@@ -19,9 +19,9 @@ def start(update, context):
 
 
 def comprar(update, context):
-    datosAirlines()
+
     update.message.reply_text('✈Por favor, ingresa el código IATA\nSi tienes dudas ingresa 👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
-    dp.add_handler(MessageHandler(Filters.text, pizza))
+    dp.add_handler(MessageHandler(Filters.text, Origen))
 
 
 def error(update, context):
@@ -37,11 +37,25 @@ def Origen(update, context):
             indice = listaIata.index(origen)
             update.message.reply_text(f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
             update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
-            print(indice)
+            #dp.add_handler(MessageHandler(Filters.text, validacion(opcion, update)))
+
             break
         else:
-            update.message.reply_text('mal')
+            update.message.reply_text('No coincide el código')
             break
+
+'''def validacion(opcion, update):
+    opcion = update.message.text
+    try:
+        while opcion != 1:
+            opcion = int(update.message.text)
+            if opcion == 0:
+                comprar()
+            else:
+                update.message.reply_text('Vuelve a ingresar')
+    except ValueError:
+        update.message.reply_text('Error, debes ingresar solo dígitos')'''
+
 
 
 def datosAirlines():
@@ -78,6 +92,8 @@ def sumar(update,context):
 listaIata = list()
 listaAirlines = list()
 listPaises = list()
+
+datosAirlines()
 updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
 
     # Get the dispatcher to register handlers
@@ -86,7 +102,6 @@ dp = updater.dispatcher
     # on different commands - answer in Telegram
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("comprar", comprar))
-dp.add_handler(CommandHandler("sumar", sumar))
 
     # on noncommand i.e message - echo the message on Telegram
 
