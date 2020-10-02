@@ -39,3 +39,30 @@ while flag == False:
         break
 
 '''
+
+while True:
+    origen = update.message.text.upper()
+    if origen in listaIata:
+        indice = listaIata.index(origen)
+        update.message.reply_text(
+            f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
+        update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
+        # dp.add_handler(MessageHandler(Filters.text, validacion(opcion, update)))
+
+        break
+    else:
+        update.message.reply_text('No coincide el código')
+        break
+
+
+
+
+    try:
+        while opcion != 1:
+            opcion = int(update.message.text)
+            if opcion == 0:
+                comprar()
+            else:
+                update.message.reply_text('Vuelve a ingresar')
+    except ValueError:
+        update.message.reply_text('Error, debes ingresar solo dígitos')

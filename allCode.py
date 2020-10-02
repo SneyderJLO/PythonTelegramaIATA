@@ -12,6 +12,7 @@ from telegram.ext import *
 from telegram.ext import CommandHandler
 
 
+
 def Updates():
     updates = list()
     while True:
@@ -49,16 +50,14 @@ def start(bot, update, pass_chat_data = True):
 
 
 
-def comprar(bot, update):
-    miID = update.message.chat.id
-    bot.sendMessage(chat_id=miID, text='por favor ingresa un dato')
-    while True:
-        if (update.message.text) == 'ola':
-            update.message.reply_text("Prefiero comer pizza")
-            break
-        else:
-            update.message.reply_text('mal')
-            break
+def comprar(bot):
+    global update_id
+    for update in bot.get_updates(offset=update_id, timeout=10):
+        update_id = update.update_id + 1
+
+        if update.message:  # your bot can receive updates without messages
+            # Reply to the message
+            update.message.reply_text(update.message.text)
 
 
 
@@ -69,13 +68,13 @@ def comprar(bot, update):
 
 
 
-
-
+global update_id
+update_id = None
 TOKEN = '1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ'
 URL = "https://api.telegram.org/bot" + TOKEN + "/"
 Menu = '¿Qué deseas hacer?: \n\n/Tutorial - Ver instrucciones \n/Comprar - Comprar vuelo  \n/Info - Información de aerolíneas y más \n/Cerrar chat\n\n'
 
-bot = telebot.TeleBot(TOKEN)
+bot = telegram.Bot("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ")
 updater = Updater(TOKEN)
 botUpdater = updater
 

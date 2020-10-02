@@ -2,13 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 import logging
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
+                          ConversationHandler)
 
-# Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
 
-logger = logging.getLogger(__name__)
+
 
 def start(update, context):
    update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
@@ -19,47 +17,46 @@ def start(update, context):
 
 
 def comprar(update, context):
-
     update.message.reply_text('✈Por favor, ingresa el código IATA\nSi tienes dudas ingresa 👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
-    dp.add_handler(MessageHandler(Filters.text, Origen))
+    Origen(update, context)
+    '''origen = update.message.text
 
+    if origen in listaIata2:
+        update.message.reply_text('bien')
+    else:
+        update.message.reply_text('mal')'''
 
-def error(update, context):
-    """Log Errors caused by Updates."""
-    logger.warning('Update "%s" caused error "%s"', update, context.error)
+    #update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
+    #dp.add_handler(MessageHandler(Filters.text, Destino))
 
 
 
 def Origen(update, context):
-    flag = False
-    while flag == False:
-        origen = update.message.text.upper()
-        if origen in listaIata:
-            indice = listaIata.index(origen)
-            update.message.reply_text(f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
-            update.message.reply_text('Escribe - 1 - para confirmar\nEscribe - 0 - para seleccionar otro origen')
-            flag = True
-            #dp.add_handler(MessageHandler(Filters.text, validacion(opcion, update)))
+    update.message.reply_text('✈Por favor, ingresa el código IATA\nSi tienes dudas ingresa 👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
+    origen = update.message.text
+    if origen in listaIata2:
+            #indice = listaIata.index(origen)
+            #update.message.reply_text(f'🌎El país de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
+        update.message.reply_text('bien')
 
-            #break
-        else:
-
+            #dp.add_handler(MessageHandler(Filters.text, validacion))
+    else:
             update.message.reply_text('No coincide el código')
-            flag = False
-            break
-            #break
+    return ConversationHandler.END
+def Destino(update, context):
+    origen = update.message.text.upper()
+    if origen in listaIata:
+        indice = listaIata.index(origen)
+        update.message.reply_text(f'🌎El pasaís de origen que elegiste es: {listPaises[indice]}.\n✈La aerolínea es: {listaAirlines[indice]}')
 
-'''def validacion(opcion, update):
+        #dp.add_handler(MessageHandler(Filters.text, validacion))
+    else:
+        update.message.reply_text('error')
+
+def validacion(update, context):
     opcion = update.message.text
-    try:
-        while opcion != 1:
-            opcion = int(update.message.text)
-            if opcion == 0:
-                comprar()
-            else:
-                update.message.reply_text('Vuelve a ingresar')
-    except ValueError:
-        update.message.reply_text('Error, debes ingresar solo dígitos')'''
+    if opcion == 1:
+        update.message.reply_text('Muy bien')
 
 
 
@@ -94,7 +91,9 @@ def sumar(update,context):
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
 
+
 listaIata = list()
+listaIata2 = ['ola','jaja']
 listaAirlines = list()
 listPaises = list()
 
@@ -107,12 +106,13 @@ dp = updater.dispatcher
     # on different commands - answer in Telegram
 dp.add_handler(CommandHandler("start", start))
 dp.add_handler(CommandHandler("comprar", comprar))
+dp.add_handler(MessageHandler(Filters.text, Origen))
+
 
     # on noncommand i.e message - echo the message on Telegram
 
 
     # log all errors
-dp.add_error_handler(error)
 
     # Start the Bot
 updater.start_polling()
