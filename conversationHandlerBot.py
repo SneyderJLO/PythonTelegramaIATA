@@ -1,3 +1,6 @@
+import os
+import signal
+
 from bs4 import BeautifulSoup
 import requests
 import time
@@ -19,7 +22,10 @@ def start(update, context):
 
 
 def done(update, context):
-    user_data = context.user_data
+    update.message.reply_text('¡Espero haberte ayudado!')
+    time.sleep(2)
+    os.kill(os.getpid(), signal.SIGINT)
+    '''user_data = context.user_data
     if 'choice' in user_data:
         del user_data['choice']
 
@@ -27,7 +33,7 @@ def done(update, context):
                               "{}"
                               "Until next time!".format(facts_to_str(user_data)))
 
-    user_data.clear()
+    user_data.clear()'''
     return ConversationHandler.END
 
 
@@ -35,7 +41,7 @@ def facts_to_str(user_data):
     facts = list()
 
     for key, value in user_data.items():
-        facts.append('👉 {} - {} 👈'.format(key, value))
+        facts.append('👉 {} - {} \t✓'.format(key, value))
 
     return "\n".join(facts).join(['\n', '\n'])
 
@@ -52,10 +58,13 @@ def regular_choice(update, context):
 
 def custom_choice(update, context):
     user_data = context.user_data
-    update.message.reply_text("¡Muy bien! Estos son tus datos:"
+    if len(user_data) > 0:
+        update.message.reply_text("¡Muy bien! Estos son tus datos:"
                               "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras.".format(
-        facts_to_str(user_data)),
+            facts_to_str(user_data)),
                               reply_markup=markup)
+    else:
+        update.message.reply_text('Todavía no hay datos ingresados.')
 
     return TYPING_CHOICE
 
@@ -71,11 +80,11 @@ def received_information(update, context):
             indice = listaIata.index(text)
             listaIata.pop(indice)
             update.message.reply_text(f'🌎 El país de {category} que elegiste es: {listPaises[indice]}.\n✈ La aerolínea es: {listaAirlines[indice]}')
-            time.sleep(2)
+            time.sleep(1)
             update.message.reply_text('😎 Se ha guardado la información.',reply_markup=markup)
         else:
 
-             update.message.reply_text('❌ Error - El código no existe o ya lo escogiste.\n🔁 Ingresa de nuevo el dato seleccionado el botón Origen',
+             update.message.reply_text(f'❌ Error - El código no existe o ya lo escogiste.\n🔁 Ingresa de nuevo el dato seleccionado el botón {category}',
                                           reply_markup=markup)
 
     print(category)
@@ -98,15 +107,12 @@ def datosAirlines():
 def main():
 
     datosAirlines()
-    # Create the Updater and pass it your bot's token.
-    # Make sure to set use_context=True to use the new context based callbacks
-    # Post version 12 this will no longer be necessary
+
     updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
 
-    # Get the dispatcher to register handlers
+
     dp = updater.dispatcher
 
-    # Add conversation handler with the states CHOOSING, TYPING_CHOICE and TYPING_REPLY
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
 
@@ -131,12 +137,9 @@ def main():
 
     dp.add_handler(conv_handler)
 
-    # Start the Bot
+
     updater.start_polling()
 
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 

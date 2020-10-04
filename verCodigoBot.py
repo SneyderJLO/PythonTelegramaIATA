@@ -35,7 +35,7 @@ def Origen(update, context):
     update.message.reply_text('✈Por favor, ingresa el código iata de tu origen.')
     dp.add_handler(MessageHandler(Filters.update.message, listener, pass_user_data=True))
 
-    #os.kill(os.getpid(), signal.SIGINT)
+    os.kill(os.getpid(), signal.SIGINT)
     return ConversationHandler.END
 
 
