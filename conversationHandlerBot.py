@@ -7,12 +7,16 @@ import time
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 from telegram import ReplyKeyboardMarkup
-CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
+CHOOSING, TYPING_REPLY, TYPING_CHOICE, DATOS = range(4)
 
 reply_keyboard = [['Origen', 'Destino', 'Fechas'],
                   ['Pasajeros', 'Confirmar compra', 'Restaurar compra'],
                   ['Done']]
+reply_Datos = [['Nombres','Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'],['Continuar']]
+
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+markupDatos = ReplyKeyboardMarkup(reply_Datos, one_time_keyboard=True)
 
 def start(update, context):
    update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
@@ -20,6 +24,10 @@ def start(update, context):
                                        '\nElige tu opción', reply_markup=markup)
    return CHOOSING
 
+
+def datosPersonales(update, context):
+    update.message.reply_text('👉 Por favor, llena los siguientes datos.', reply_markup = markupDatos)
+    return DATOS
 
 def done(update, context):
     update.message.reply_text('¡Espero haberte ayudado!')
@@ -50,21 +58,18 @@ def regular_choice(update, context):
     text = update.message.text
     context.user_data['choice'] = text
     category = user_data['choice']
-    if category == 'Origen' or category == 'Destino':
-        update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
+    #if category == 'Origen' or category == 'Destino':
+    update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
 
     return TYPING_REPLY
 
 
 def custom_choice(update, context):
     user_data = context.user_data
-    if len(user_data) > 0:
-        update.message.reply_text("¡Muy bien! Estos son tus datos:"
-                              "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras.".format(
-            facts_to_str(user_data)),
-                              reply_markup=markup)
-    else:
-        update.message.reply_text('Todavía no hay datos ingresados.')
+    text = update.message.text
+    context.user_data['choice'] = text
+
+
 
     return TYPING_CHOICE
 
@@ -86,7 +91,14 @@ def received_information(update, context):
 
              update.message.reply_text(f'❌ Error - El código no existe o ya lo escogiste.\n🔁 Ingresa de nuevo el dato seleccionado el botón {category}',
                                           reply_markup=markup)
-
+    '''if category == 'Confirmar compra':
+        if len(user_data) > 0:
+            update.message.reply_text("¡Muy bien! Estos son tus datos:"
+                                      "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras.".format(
+                facts_to_str(user_data)),
+                reply_markup=markup)
+        else:
+            update.message.reply_text('Todavía no hay datos ingresados.')'''
     print(category)
     return CHOOSING
 
@@ -117,11 +129,12 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra)$'),
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra|Nombres|Apellidos)$'),
                                       regular_choice),
                        MessageHandler(Filters.regex('^Confirmar compra'),
-                                      custom_choice)
+                                      datosPersonales)
                        ],
+            #DATOS: [MessageHandler(Filters.regex('^(Nombres|Apellidos)$'), regular_choice)],
 
             TYPING_CHOICE: [
                 MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$')),
