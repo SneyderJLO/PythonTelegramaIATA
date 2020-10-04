@@ -68,7 +68,10 @@ def custom_choice(update, context):
     user_data = context.user_data
     text = update.message.text
     context.user_data['choice'] = text
-
+    del user_data['choice']
+    update.message.reply_text("¡Muy bien! Estos son tus datos:"
+                              "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras."
+        .format(facts_to_str(user_data)),reply_markup=markup)
 
 
     return TYPING_CHOICE
@@ -132,10 +135,11 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra|Nombres)$'), |Apellidos|Celular|Pasaporte|Cédula', 'Domicilio
-                                      regular_choice),
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra|Nombres'
+                                                    '|Apellidos|Celular|Pasaporte|Cédula|Domicilio)$'),regular_choice),
                        MessageHandler(Filters.regex('^Confirmar compra$'),
-                                      datosPersonales)
+                                      datosPersonales),
+                       MessageHandler(Filters.regex('^Continuar$'),custom_choice)
                        ],
             #DATOS: [MessageHandler(Filters.regex('^(Nombres|Apellidos)$'), regular_choice)],
 
