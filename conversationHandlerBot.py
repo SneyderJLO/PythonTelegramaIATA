@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-
+import time
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 from telegram import ReplyKeyboardMarkup
@@ -14,7 +14,7 @@ markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 def start(update, context):
    update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
                                        '\nTe ayudaré a realizar correctamente la compra de tu boleto de vuelo.'
-                                       '\nElige tu opción, dando click al comando o escribiéndolo', reply_markup=markup)
+                                       '\nElige tu opción', reply_markup=markup)
    return CHOOSING
 
 
@@ -35,50 +35,69 @@ def facts_to_str(user_data):
     facts = list()
 
     for key, value in user_data.items():
-        facts.append('{} - {}'.format(key, value))
+        facts.append('👉 {} - {} 👈'.format(key, value))
 
     return "\n".join(facts).join(['\n', '\n'])
 
 def regular_choice(update, context):
+    user_data = context.user_data
     text = update.message.text
     context.user_data['choice'] = text
-    update.message.reply_text(
-        'Seleccionaste {}.\nPor favor, ingresa el dato.'.format(text.lower()))
+    category = user_data['choice']
+    if category == 'Origen' or category == 'Destino':
+        update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
+
     return TYPING_REPLY
 
 
 def custom_choice(update, context):
-    update.message.reply_text('Alright, please send me the category first, '
-                              'for example "Most impressive skill"')
+    user_data = context.user_data
+    update.message.reply_text("¡Muy bien! Estos son tus datos:"
+                              "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras.".format(
+        facts_to_str(user_data)),
+                              reply_markup=markup)
 
     return TYPING_CHOICE
 
 
 def received_information(update, context):
-    flag = False
     user_data = context.user_data
-    text = update.message.text
+    text = update.message.text.upper()
     category = user_data['choice']
     user_data[category] = text
     del user_data['choice']
-    if user_data['Origen']:
-        if user_data['Origen'] == 'ola':
-            update.message.reply_text('Correcto')
-            update.message.reply_text("¡Muy bien! Estos son tus datos:"
-                                      "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras.".format(
-                facts_to_str(user_data)),
-                                      reply_markup=markup)
+    if category == 'Origen' or category == 'Destino':
+        if text in listaIata:
+            indice = listaIata.index(text)
+            listaIata.pop(indice)
+            update.message.reply_text(f'🌎 El país de {category} que elegiste es: {listPaises[indice]}.\n✈ La aerolínea es: {listaAirlines[indice]}')
+            time.sleep(2)
+            update.message.reply_text('😎 Se ha guardado la información.',reply_markup=markup)
         else:
-            update.message.reply_text('Incorrecto. Ingresa de nuevo el dato seleccionado el botón Origen',
-                                      reply_markup=markup)
 
-    print(user_data['Origen'])
-    print(type(user_data))
-    print(text)
+             update.message.reply_text('❌ Error - El código no existe o ya lo escogiste.\n🔁 Ingresa de nuevo el dato seleccionado el botón Origen',
+                                          reply_markup=markup)
+
+    print(category)
     return CHOOSING
 
 
+
+def datosAirlines():
+    sitioCodes = 'https://madavan.com.mx/codigo-iata-aerolineas/'
+    pagina = requests.get(sitioCodes)
+    soup = BeautifulSoup(pagina.content, 'html.parser')
+    for row in soup.findAll('table')[0].tbody.findAll('tr'):  # Validacion 2: se detiene cuando encuentra la primera tabla y todos los subcampos 'td'
+        iataCodes = row.findAll('td')[0]  # busca el campo donde haya la puntuación de cada etiqueta
+        airlineCodes = row.findAll('td')[1]  # busca el campo donde haya la puntuación de cada etiqueta
+        paises = row.findAll('td')[4]  # busca el campo donde haya la puntuación de cada etiqueta
+        listaIata.append(iataCodes.text)
+        listaAirlines.append(airlineCodes.text)
+        listPaises.append(paises.text)
+
 def main():
+
+    datosAirlines()
     # Create the Updater and pass it your bot's token.
     # Make sure to set use_context=True to use the new context based callbacks
     # Post version 12 this will no longer be necessary
@@ -92,9 +111,9 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Confirmar Comprar|Restaurar compra)$'),
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra)$'),
                                       regular_choice),
-                       MessageHandler(Filters.regex('^Something else...$'),
+                       MessageHandler(Filters.regex('^Confirmar compra'),
                                       custom_choice)
                        ],
 
@@ -122,6 +141,9 @@ def main():
 
 
 if __name__ == '__main__':
+    listaIata = list()
+    listaAirlines = list()
+    listPaises = list()
     main()
 
 
