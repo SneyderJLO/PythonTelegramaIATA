@@ -27,7 +27,7 @@ def start(update, context):
 
 def datosPersonales(update, context):
     update.message.reply_text('👉 Por favor, llena los siguientes datos.', reply_markup = markupDatos)
-    return DATOS
+    return CHOOSING
 
 def done(update, context):
     update.message.reply_text('¡Espero haberte ayudado!')
@@ -75,6 +75,7 @@ def custom_choice(update, context):
 
 
 def received_information(update, context):
+    datosPersonales = ['Nombres','Apellidos', 'Celular','Pasaporte', 'Cédula', 'Domicilio','Continuar']
     user_data = context.user_data
     text = update.message.text.upper()
     category = user_data['choice']
@@ -91,6 +92,8 @@ def received_information(update, context):
 
              update.message.reply_text(f'❌ Error - El código no existe o ya lo escogiste.\n🔁 Ingresa de nuevo el dato seleccionado el botón {category}',
                                           reply_markup=markup)
+    if category in datosPersonales:
+        update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupDatos)
     '''if category == 'Confirmar compra':
         if len(user_data) > 0:
             update.message.reply_text("¡Muy bien! Estos son tus datos:"
@@ -117,7 +120,7 @@ def datosAirlines():
         listPaises.append(paises.text)
 
 def main():
-
+    print(reply_Datos[0])
     datosAirlines()
 
     updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
@@ -129,9 +132,9 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra|Nombres|Apellidos)$'),
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Restaurar compra|Nombres)$'), |Apellidos|Celular|Pasaporte|Cédula', 'Domicilio
                                       regular_choice),
-                       MessageHandler(Filters.regex('^Confirmar compra'),
+                       MessageHandler(Filters.regex('^Confirmar compra$'),
                                       datosPersonales)
                        ],
             #DATOS: [MessageHandler(Filters.regex('^(Nombres|Apellidos)$'), regular_choice)],
