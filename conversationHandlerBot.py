@@ -1,3 +1,5 @@
+from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
+
 import os
 import signal
 import  random
@@ -14,20 +16,38 @@ reply_keyboard = [['Origen', 'Destino', 'Fechas'],
                   ['Finalizar chat']]
 reply_Datos = [['Nombres','Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'],['Continuar']]
 
+replyFechas = [['Fecha de ida','Fecha de regreso'],['Continuar']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 markupDatos = ReplyKeyboardMarkup(reply_Datos, one_time_keyboard=True)
 
+markupFechas = ReplyKeyboardMarkup(replyFechas, one_time_keyboard=True)
 def start(update, context):
-   update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
+    calendar, step = DetailedTelegramCalendar().build()
+    update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
                                        '\nTe ayudaré a realizar correctamente la compra de tu boleto de vuelo.'
                                        '\nElige tu opción', reply_markup=markup)
-   return CHOOSING
+    update.message.reply_text(f"Select {LSTEP[step]}",
+                     reply_markup=calendar)
+    result, key, step = DetailedTelegramCalendar().process(context.user_data)
+    update.message.reply_text(f'bot.edit_message_text(f"You selected {result}')
+    return CHOOSING
 
 
 def datosPersonales(update, context):
-    update.message.reply_text('👉 Por favor, llena los siguientes datos.', reply_markup = markupDatos)
+    user_data = context.user_data
+    text = update.message.text
+    context.user_data['choice'] = text
+    category = user_data['choice']
+    if category == 'Confirmar compra':
+
+        update.message.reply_text('👉 Por favor, llena los siguientes datos.', reply_markup = markupDatos)
+    if category == 'Fechas':
+
+        update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup = markupFechas)
+    print(category)
     return CHOOSING
+
 
 def done(update, context):
     update.message.reply_text('¡Espero haberte ayudado!\nNos vemos pronto.')
@@ -59,8 +79,12 @@ def regular_choice(update, context):
     context.user_data['choice'] = text
     category = user_data['choice']
     #if category == 'Origen' or category == 'Destino':
+    '''if category == 'Fecha de ida' or category == 'Fecha de vuelta':
+        #del user_data['Fechas']
+        update.message.reply_text('Por favor, ingresa el día, mes y año seguido de un espacio.\nEjemplo: 02 11 2020')
+    else:'''
     update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
-
+    print(category)
     return TYPING_REPLY
 
 
@@ -117,6 +141,17 @@ def received_information(update, context):
         except ValueError:
             update.message.reply_text(f'❌ Error - La cantidad de pasajeros no debe tener una letra.\n👉 Ingresa nuevamente seleccionando el botón'
                                       f' {category}.', reply_markup =markup)
+    if category == 'Fecha de ida':
+        try:
+            dia = int(context.args[0])
+            mes = int(context.args[1])
+            año = int(context.args[2])
+            suma = dia + mes
+
+            update.message.reply_text("La suma es " + str(suma))
+
+        except (ValueError):
+            update.message.reply_text("por favor utilice dos numeros")
     return CHOOSING
 
 
@@ -146,9 +181,10 @@ def main():
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fechas|Pasajeros|Nombres'
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fecha de ida|Fecha de regreso|Pasajeros|Nombres'
                                                     '|Apellidos|Celular|Pasaporte|Cédula|Domicilio)$'),regular_choice),
-                       MessageHandler(Filters.regex('^Confirmar compra$'),
+
+                       MessageHandler(Filters.regex('^(Confirmar compra|Fechas)$'),
                                       datosPersonales),
                        MessageHandler(Filters.regex('^Continuar$'),custom_choice),
                        MessageHandler(Filters.regex('Restaurar compra$'),restaurarCompra)
@@ -157,7 +193,7 @@ def main():
 
             TYPING_CHOICE: [
                 MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$')),
-                               regular_choice)],
+                               datosPersonales)],
 
             TYPING_REPLY: [
                 MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Finalizar chat$')),
