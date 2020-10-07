@@ -1,5 +1,3 @@
-from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-
 import os
 import signal
 import  random
@@ -9,28 +7,15 @@ import time
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 from telegram import ReplyKeyboardMarkup
-CHOOSING, TYPING_REPLY, TYPING_CHOICE, DATOS = range(4)
 
-reply_keyboard = [['Origen', 'Destino', 'Fechas'],
-                  ['Pasajeros', 'Confirmar compra', 'Restaurar compra'],
-                  ['Finalizar chat']]
-reply_Datos = [['Nombres','Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'],['Continuar']]
 
-replyFechas = [['Fecha de ida','Fecha de regreso'],['Continuar']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
-
-markupDatos = ReplyKeyboardMarkup(reply_Datos, one_time_keyboard=True)
-
-markupFechas = ReplyKeyboardMarkup(replyFechas, one_time_keyboard=True)
 def start(update, context):
-    calendar, step = DetailedTelegramCalendar().build()
     update.message.reply_text('¡Hola! ¡Te habla el PanaMiguel 😹 y soy un bot interactivo!'
                                        '\nTe ayudaré a realizar correctamente la compra de tu boleto de vuelo.'
-                                       '\nElige tu opción', reply_markup=markup)
-    update.message.reply_text(f"Select {LSTEP[step]}",
-                     reply_markup=calendar)
-    result, key, step = DetailedTelegramCalendar().process(context.user_data)
-    update.message.reply_text(f'bot.edit_message_text(f"You selected {result}')
+                                        '\n✈ Si no conoces el código, puedes visitar \n👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
+    #time.sleep(1) ---------------
+    update.message.reply_text('👉 Elige tu opción', reply_markup=markup)
+
     return CHOOSING
 
 
@@ -43,25 +28,43 @@ def datosPersonales(update, context):
 
         update.message.reply_text('👉 Por favor, llena los siguientes datos.', reply_markup = markupDatos)
     if category == 'Fechas':
-
         update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup = markupFechas)
-    print(category)
+    if category == 'Solo ida':
+        reply_FechasFinal = [['Día', 'Mes', 'Año'], ['Continuar']]
+
+        markupFechasFinal = ReplyKeyboardMarkup(reply_FechasFinal, one_time_keyboard=True)
+        update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup = markupFechasFinal)
+
+    if category == 'Fecha de ida':
+        reply_FechasFinal = [['Día', 'Mes', 'Año'], ['Confirmar fecha']]
+        markupFechasFinal = ReplyKeyboardMarkup(reply_FechasFinal, one_time_keyboard=True)
+        update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup=markupFechasFinal)
+    if category == 'Ida y vuelta':
+        controlIdaVuelta.append('flag')
+        update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup = markupRetornos)
+
+    if category == 'Fecha de vuelta':
+        update.message.reply_text('👉 Por favor, ingresa los siguientes datos.', reply_markup = markupFechasVuelta)
+
+    if category == 'Restaurar compra':
+        update.message.reply_text('¡Listo! Todos los datos han sido borrados.', reply_markup=markup)
+        user_data.clear()
+        #time.sleep(1)
+
+    if category == 'Continuar':
+        del user_data['choice']
+        update.message.reply_text("¡Muy bien! Estos son tus datos:"
+                                  "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras."
+                                  .format(facts_to_str(user_data)), reply_markup=markup)
+    if category == 'Confirmar fecha':
+        update.message.reply_text('selecciona', reply_markup = markupRetornos)
     return CHOOSING
 
 
 def done(update, context):
     update.message.reply_text('¡Espero haberte ayudado!\nNos vemos pronto.')
-    time.sleep(1.2)
+    #time.sleep(1.2)
     os.kill(os.getpid(), signal.SIGINT)
-    '''user_data = context.user_data
-    if 'choice' in user_data:
-        del user_data['choice']
-
-    update.message.reply_text("I learned these facts about you:"
-                              "{}"
-                              "Until next time!".format(facts_to_str(user_data)))
-
-    user_data.clear()'''
     return ConversationHandler.END
 
 
@@ -84,7 +87,6 @@ def regular_choice(update, context):
         update.message.reply_text('Por favor, ingresa el día, mes y año seguido de un espacio.\nEjemplo: 02 11 2020')
     else:'''
     update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
-    print(category)
     return TYPING_REPLY
 
 
@@ -130,6 +132,7 @@ def received_information(update, context):
     if category in datosPersonales:
         update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupDatos)
 
+
     if category == 'Pasajeros':
         try:
             x = int(text)
@@ -141,17 +144,22 @@ def received_information(update, context):
         except ValueError:
             update.message.reply_text(f'❌ Error - La cantidad de pasajeros no debe tener una letra.\n👉 Ingresa nuevamente seleccionando el botón'
                                       f' {category}.', reply_markup =markup)
-    if category == 'Fecha de ida':
+
+    if 'flag' in controlIdaVuelta:
+        reply_FechasFinal = [['Día', 'Mes', 'Año'], ['Confirmar fecha']]
+        markupFechasFinal = ReplyKeyboardMarkup(reply_FechasFinal, one_time_keyboard=True)
+        controlIdaVuelta.clear()
+    if category == 'Día' or category == 'Mes' or category == 'Año':
         try:
-            dia = int(context.args[0])
-            mes = int(context.args[1])
-            año = int(context.args[2])
-            suma = dia + mes
-
-            update.message.reply_text("La suma es " + str(suma))
-
+            dato = int(text)
+            if dato > 0 :
+                update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
+            else:
+                update.message.reply_text(f'❌ Error - El {category} no deber tener valores negativos.\n👉 Ingresa nuevamente seleccionado el botón'
+                                          f' {category}',reply_markup =markupFechasFinal)
         except (ValueError):
-            update.message.reply_text("por favor utilice dos numeros")
+            update.message.reply_text(f'❌ Error - El {category} no debe contener letras.\n👉 Ingresa nuevamente seleccionando el botón'
+                f' {category}.', reply_markup=markupFechasFinal)
     return CHOOSING
 
 
@@ -169,30 +177,22 @@ def datosAirlines():
         listPaises.append(paises.text)
 
 def main():
-    print(reply_Datos[0])
     datosAirlines()
-
     updater = Updater("1275373802:AAGn8auWnyZWRjlDbO4zAD4446ThP5OSwbQ", use_context=True)
-
-
     dp = updater.dispatcher
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
-
         states={
-            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Fecha de ida|Fecha de regreso|Pasajeros|Nombres'
-                                                    '|Apellidos|Celular|Pasaporte|Cédula|Domicilio)$'),regular_choice),
+            CHOOSING: [MessageHandler(Filters.regex('^(Origen|Destino|Pasajeros|Nombres'
+                                                    '|Apellidos|Celular|Pasaporte|Cédula'
+                                                    '|Domicilio|Día|Mes|Año)$'),regular_choice),
 
-                       MessageHandler(Filters.regex('^(Confirmar compra|Fechas)$'),
+                       MessageHandler(Filters.regex('^(Confirmar compra|Confirmar fecha|Fechas|Fecha de ida|Fecha de vuelta|Solo ida|Ida y vuelta|Restaurar compra|Continuar)$'),
                                       datosPersonales),
-                       MessageHandler(Filters.regex('^Continuar$'),custom_choice),
-                       MessageHandler(Filters.regex('Restaurar compra$'),restaurarCompra)
                        ],
-            #DATOS: [MessageHandler(Filters.regex('^(Nombres|Apellidos)$'), regular_choice)],
-
             TYPING_CHOICE: [
-                MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$')),
+                MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$') ),
                                datosPersonales)],
 
             TYPING_REPLY: [
@@ -212,10 +212,46 @@ def main():
 
 
 if __name__ == '__main__':
+    CHOOSING, TYPING_REPLY, TYPING_CHOICE, DATOS = range(4)
+
+    reply_keyboard = [['Origen', 'Destino', 'Fechas'],
+                      ['Pasajeros', 'Confirmar compra', 'Restaurar compra'],
+                      ['Finalizar chat']]
+    reply_Datos = [['Nombres', 'Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'], ['Continuar']]
+
+    replyFechasInicial = [['Solo ida', 'Ida y vuelta']]
+
+    reply_FechasFinal = [['Día', 'Mes', 'Año'], ['Continuar']]
+
+    reply_Retornos = [['Fecha de ida', 'Fecha de vuelta']]
+
+    reply_FechasIdaVelta = [['Día (Regreso)', 'Mes (Regreso)', 'Año (Regreso)'], ['Continuar']]
+
+    markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+
+    markupDatos = ReplyKeyboardMarkup(reply_Datos, one_time_keyboard=True)
+
+    markupFechas = ReplyKeyboardMarkup(replyFechasInicial, one_time_keyboard=True)
+
+    #markupFechasFinal = ReplyKeyboardMarkup(reply_FechasFinal, one_time_keyboard=True)
+
+    markupRetornos = ReplyKeyboardMarkup(reply_Retornos, one_time_keyboard=True)
+
+    markupFechasVuelta = ReplyKeyboardMarkup(reply_FechasIdaVelta, one_time_keyboard=True)
     listaIata = list()
     listaAirlines = list()
     listPaises = list()
+    controlIdaVuelta = list()
     main()
+
+
+
+
+
+
+
+
+
 
 
 
