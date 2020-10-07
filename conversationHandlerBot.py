@@ -91,12 +91,13 @@ def eleccionMensaje(update, context): #funcionsssssssssssssssssssssssss
 def receptorDatos(update, context):
     datosPersonales = ['Nombres','Apellidos', 'Celular','Pasaporte', 'Cédula', 'Domicilio']
     user_data = context.user_data
-    text = update.message.text.upper()
+    text = update.message.text
+    mensaje = text.upper()
     category = user_data['choice']
     user_data[category] = text
     del user_data['choice']
     if category == 'Origen' or category == 'Destino':
-        if text in listaIata:
+        if mensaje in listaIata:
             indice = listaIata.index(text)
             listaIata.pop(indice)
             update.message.reply_text(f'🌎 El país de {category} que elegiste es: {listPaises[indice]}.\n✈ La aerolínea es: {listaAirlines[indice]}.')
@@ -128,18 +129,29 @@ def receptorDatos(update, context):
             dato = int(text)
             if dato > 0 :
                 #update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
-                if int(user_data['Día']) <= 30:
-                    update.message.reply_text('😎 Se ha guardado la información.')
-                else:
-                    update.message.reply_text('El día debe ser menor o igual a 30')
-                if int(user_data['Mes']) <= 12:
-                    update.message.reply_text('😎 Se ha guardado la información.')
-                else:
-                    update.message.reply_text('El mes debe ser menor a 12 (Diciembre)')
-                if int(user_data['Año']) <= 2021:
-                    update.message.reply_text('😎 Se ha guardado la información.')
-                else:
-                    update.message.reply_text('El año debe ser menor a 2022.')
+                if category == 'Día':
+                    if dato <= 30:
+                        update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasFinal)
+                    else:
+                        update.message.reply_text(f'❌ Error - El {category} debe ser menor a 31.\n👉 Ingresa nuevamente seleccionado el botón'
+                                              f' {category}',reply_markup =markupFechasFinal)
+
+                if category == 'Mes':
+                    if dato <= 12:
+                        update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasFinal)
+                    else:
+                        update.message.reply_text(f'❌ Error - El {category} debe ser menor o igual a 12 (Diciembre).\n👉 Ingresa nuevamente seleccionado el botón'
+                                              f' {category}',reply_markup =markupFechasFinal)
+
+                if category == 'Año':
+                    if dato <= 2021:
+                        update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
+                    else:
+                        update.message.reply_text(
+                            f'❌ Error - El {category} debe ser menor o igual a 2021.\n👉 Ingresa nuevamente seleccionado el botón'
+                            f' {category}', reply_markup=markupFechasFinal)
+
+
             else:
                 update.message.reply_text(f'❌ Error - El {category} no deber tener valores negativos.\n👉 Ingresa nuevamente seleccionado el botón'
                                           f' {category}',reply_markup =markupFechasFinal)
