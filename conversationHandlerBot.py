@@ -15,6 +15,7 @@ def start(update, context):
                                         '\n✈ Si no conoces el código, puedes visitar \n👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
     #time.sleep(1) ---------------
     update.message.reply_text('👉 Elige tu opción', reply_markup=markup)
+    #update.message.reply_text('JAJAJSSADJ RETROLIADO COMPA \nKE PASÓ MASTERxdxd\nSaludos y un beso en el siempre sucioooxddd\nCarita fachera facherisima\n😎😎😎😎')
 
     return ELECCIONES
 
@@ -60,7 +61,6 @@ def done(update, context):
 
 def mensajeFinal(user_data):
     facts = list()
-
     for key, value in user_data.items():
         facts.append('👉 {} - {} \t✓'.format(key, value))
 
@@ -92,15 +92,16 @@ def receptorDatos(update, context):
     datosPersonales = ['Nombres','Apellidos', 'Celular','Pasaporte', 'Cédula', 'Domicilio']
     user_data = context.user_data
     text = update.message.text
-    mensaje = text.upper()
+    mensaje = update.message.text.upper()
     category = user_data['choice']
     user_data[category] = text
     del user_data['choice']
     if category == 'Origen' or category == 'Destino':
         if mensaje in listaIata:
-            indice = listaIata.index(text)
+            indice = listaIata.index(mensaje)
             listaIata.pop(indice)
             update.message.reply_text(f'🌎 El país de {category} que elegiste es: {listPaises[indice]}.\n✈ La aerolínea es: {listaAirlines[indice]}.')
+            user_data[category] = listPaises[indice]
             time.sleep(1)
             update.message.reply_text('😎 Se ha guardado la información.',reply_markup=markup)
         else:
@@ -218,11 +219,10 @@ def main():
                                       datosPersonales),
                          ],
             REPLICAeleccion: [
-                MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Done$') ),
-                               datosPersonales)],
+                MessageHandler(Filters.text,datosPersonales)],
 
             REPLICAS: [
-                MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^Finalizar chat$')),
+                MessageHandler(Filters.text,
                                receptorDatos)],
         },
 
@@ -263,15 +263,3 @@ if __name__ == '__main__':
     listPaises = list()
     controlIdaVuelta = list()
     main()
-
-
-
-
-
-
-
-
-
-
-
-
