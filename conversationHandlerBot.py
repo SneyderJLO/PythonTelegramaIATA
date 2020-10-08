@@ -15,12 +15,12 @@ def start(update, context):
                                         '\n✈ Si no conoces el código, puedes visitar \n👉 https://madavan.com.mx/codigo-iata-aerolineas/ 👈')
     #time.sleep(1) ---------------
     update.message.reply_text('👉 Elige tu opción', reply_markup=markup)
-    #update.message.reply_text('JAJAJSSADJ RETROLIADO COMPA \nKE PASÓ MASTERxdxd\nSaludos y un beso en el siempre sucioooxddd\nCarita fachera facherisima\n😎😎😎😎')
 
     return ELECCIONES
 
 
 def datosPersonales(update, context):
+    precio = str(round(random.uniform(800, 12000), 2)) + " dólares"
     user_data = context.user_data
     text = update.message.text
     context.user_data['choice'] = text
@@ -47,12 +47,18 @@ def datosPersonales(update, context):
         update.message.reply_text("¡Muy bien! Estos son tus datos:"
                                   "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras."
                                   .format(mensajeFinal(user_data)), reply_markup=markup)
+    if category == 'Confirmar datos':
+        del user_data['choice']
+        update.message.reply_text(f"¡Muy bien! Estos son tus datos {mensajeFinal(user_data)}"
+        f"\n👉 El valor del boleto de vuelo es: 💸 {precio}."
+                                  , reply_markup=markup)
+
     if category == 'Confirmar fecha':
         update.message.reply_text('selecciona', reply_markup = markupRetornos)
     return ELECCIONES
 
 
-def done(update, context):
+def terminarBot(update, context):
     update.message.reply_text('¡Espero haberte ayudado!\nNos vemos pronto.')
     #time.sleep(1.2)
     os.kill(os.getpid(), signal.SIGINT)
@@ -61,6 +67,7 @@ def done(update, context):
 
 def mensajeFinal(user_data):
     facts = list()
+
     for key, value in user_data.items():
         facts.append('👉 {} - {} \t✓'.format(key, value))
 
@@ -72,21 +79,6 @@ def entradaDatos(update, context):
     context.user_data['choice'] = text
     update.message.reply_text(f'✈ {text}\n👉 Por favor, ingresa el dato para: {text}.')
     return REPLICAS
-
-
-def eleccionMensaje(update, context): #funcionsssssssssssssssssssssssss
-    user_data = context.user_data
-
-    text = update.message.text
-    context.user_data['choice'] = text
-    del user_data['choice']
-    update.message.reply_text("¡Muy bien! Estos son tus datos:"
-                              "{}Puedes cambiar de dato cuando quieras, simplemente entra al botón que quieras."
-        .format(mensajeFinal(user_data)),reply_markup=markup)
-
-
-    return REPLICAeleccion
-
 
 def receptorDatos(update, context):
     datosPersonales = ['Nombres','Apellidos', 'Celular','Pasaporte', 'Cédula', 'Domicilio']
@@ -110,7 +102,6 @@ def receptorDatos(update, context):
                                           reply_markup=markup)
     if category in datosPersonales:
         update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupDatos)
-
 
     if category == 'Pasajeros':
         try:
@@ -136,6 +127,7 @@ def receptorDatos(update, context):
                     else:
                         update.message.reply_text(f'❌ Error - El {category} debe ser menor a 31.\n👉 Ingresa nuevamente seleccionado el botón'
                                               f' {category}',reply_markup =markupFechasFinal)
+                        del user_data['Día']
 
                 if category == 'Mes':
                     if dato <= 12:
@@ -143,38 +135,43 @@ def receptorDatos(update, context):
                     else:
                         update.message.reply_text(f'❌ Error - El {category} debe ser menor o igual a 12 (Diciembre).\n👉 Ingresa nuevamente seleccionado el botón'
                                               f' {category}',reply_markup =markupFechasFinal)
+                        del user_data['Mes']
 
                 if category == 'Año':
-                    if dato == 2020 or dato == 2021:
+                    if dato == 2020:
                         update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
                     else:
                         update.message.reply_text(
-                            f'❌ Error - El {category} debe ser igual a 2020 o igual a 2021.\n👉 Ingresa nuevamente seleccionado el botón'
+                            f'❌ Error - El {category} debe ser igual a 2020.\n👉 Ingresa nuevamente seleccionado el botón'
                             f' {category}', reply_markup=markupFechasFinal)
+                        del user_data['Año']
 
                 try:
                     if category == 'Día de regreso':
-                        if dato > int(user_data['Día']):
+                        if dato >= int(user_data['Día']):
                             update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasVuelta)
                         else:
                             update.message.reply_text(f'❌ Error - El {category} debe ser mayor al Día de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
                                                       f' {category}',reply_markup =markupFechasVuelta)
+                            del user_data['Día de regreso']
 
 
                     if category == 'Mes de regreso':
-                        if dato > int(user_data['Mes']):
+                        if dato >= int(user_data['Mes']):
                             update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasVuelta)
                         else:
                             update.message.reply_text(f'❌ Error - El {category} debe ser mayor al Mes de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
-                                                  f' {category}',reply_markup =markupFechasFinal)
+                                                  f' {category}',reply_markup =markupFechasVuelta)
+                            del user_data['Mes de regreso']
 
                     if category == 'Año de regreso':
-                        if dato == int(user_data['Año']):
+                        if dato == 2020:
                             update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasVuelta)
                         else:
                             update.message.reply_text(
                                 f'❌ Error - El {category} debe ser igual al Año de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
                                 f' {category}', reply_markup=markupFechasVuelta)
+                            del user_data['Año de regreso']
                 except KeyError:
                     update.message.reply_text('❌ Error - Aún no hay datos de la Fecha de Ida.\n👉 Ingresa uno seleccionando el botón Fecha de ida.',
                                               reply_markup=markupRetornos)
@@ -183,12 +180,13 @@ def receptorDatos(update, context):
             else:
                 update.message.reply_text(f'❌ Error - El {category} no deber tener valores negativos.\n👉 Ingresa nuevamente seleccionado el botón'
                                           f' {category}',reply_markup =markupFechasFinal)
+                del user_data[category]
         except (ValueError):
             update.message.reply_text(f'❌ Error - El {category} no debe contener letras.\n👉 Ingresa nuevamente seleccionando el botón'
                 f' {category}.', reply_markup=markupFechasFinal)
+            del user_data[category]
+    print(text)
     return ELECCIONES
-
-
 
 def datosAirlines():
     sitioCodes = 'https://madavan.com.mx/codigo-iata-aerolineas/'
@@ -215,18 +213,17 @@ def main():
                                                     '|Domicilio|Día|Mes|Año|Día de regreso|Mes de regreso|Año de regreso)$'), entradaDatos),
 
                          MessageHandler(Filters.regex('^(Confirmar compra|Confirmar fecha|Fechas|Fecha de ida|Fecha de vuelta' 
-                                                    '|Restaurar compra|Continuar)$'),
+                                                    '|Restaurar compra|Continuar|Confirmar datos)$'),
                                       datosPersonales),
                          ],
             REPLICAeleccion: [
                 MessageHandler(Filters.text,datosPersonales)],
 
             REPLICAS: [
-                MessageHandler(Filters.text,
-                               receptorDatos)],
+                MessageHandler(Filters.text,receptorDatos)],
         },
 
-        fallbacks=[MessageHandler(Filters.regex('^Finalizar chat$'), done)]
+        fallbacks=[MessageHandler(Filters.regex('^Finalizar chat$'), terminarBot)]
     )
 
     dp.add_handler(botConversacion)
@@ -240,7 +237,7 @@ if __name__ == '__main__':
     reply_keyboard = [['Origen', 'Destino', 'Fechas'],
                       ['Pasajeros', 'Confirmar compra', 'Restaurar compra'],
                       ['Finalizar chat']]
-    reply_Datos = [['Nombres', 'Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'], ['Continuar']]
+    reply_Datos = [['Nombres', 'Apellidos', 'Celular'], ['Pasaporte', 'Cédula', 'Domicilio'], ['Confirmar datos']]
 
 
     reply_FechasFinal = [['Día', 'Mes', 'Año'], ['Confirmar fecha']]
