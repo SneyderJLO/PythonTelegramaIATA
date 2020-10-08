@@ -116,6 +116,7 @@ def receptorDatos(update, context):
                                       f' {category}.', reply_markup =markup)
 
 
+
     if category == 'Día' or category == 'Mes' or category == 'Año' or category == 'Día de regreso' or category == 'Mes de regreso' or category == 'Año de regreso':
         try:
             dato = int(text)
@@ -157,7 +158,7 @@ def receptorDatos(update, context):
 
 
                     if category == 'Mes de regreso':
-                        if dato >= int(user_data['Mes']):
+                        if dato  >= int(user_data['Mes']) and dato <=12:
                             update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasVuelta)
                         else:
                             update.message.reply_text(f'❌ Error - El {category} debe ser mayor al Mes de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
