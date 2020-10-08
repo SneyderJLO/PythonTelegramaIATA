@@ -128,7 +128,7 @@ def receptorDatos(update, context):
         try:
             dato = int(text)
             if dato > 0 :
-                #update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
+
                 if category == 'Día':
                     if dato <= 30:
                         update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasFinal)
@@ -144,12 +144,39 @@ def receptorDatos(update, context):
                                               f' {category}',reply_markup =markupFechasFinal)
 
                 if category == 'Año':
-                    if dato <= 2021:
+                    if dato == 2020 or dato == 2021:
                         update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasFinal)
                     else:
                         update.message.reply_text(
-                            f'❌ Error - El {category} debe ser menor o igual a 2021.\n👉 Ingresa nuevamente seleccionado el botón'
+                            f'❌ Error - El {category} debe ser igual a 2020 o igual a 2021.\n👉 Ingresa nuevamente seleccionado el botón'
                             f' {category}', reply_markup=markupFechasFinal)
+
+                try:
+                    if category == 'Día de regreso':
+                        if dato > int(user_data['Día']):
+                            update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasVuelta)
+                        else:
+                            update.message.reply_text(f'❌ Error - El {category} debe ser mayor al Día de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
+                                                      f' {category}',reply_markup =markupFechasVuelta)
+
+
+                    if category == 'Mes de regreso':
+                        if dato > int(user_data['Mes']):
+                            update.message.reply_text('😎 Se ha guardado la información.', reply_markup = markupFechasVuelta)
+                        else:
+                            update.message.reply_text(f'❌ Error - El {category} debe ser mayor al Mes de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
+                                                  f' {category}',reply_markup =markupFechasFinal)
+
+                    if category == 'Año de regreso':
+                        if dato == int(user_data['Año']):
+                            update.message.reply_text('😎 Se ha guardado la información.', reply_markup=markupFechasVuelta)
+                        else:
+                            update.message.reply_text(
+                                f'❌ Error - El {category} debe ser igual al Año de Ida.\n👉 Ingresa nuevamente seleccionado el botón'
+                                f' {category}', reply_markup=markupFechasVuelta)
+                except KeyError:
+                    update.message.reply_text('❌ Error - Aún no hay datos de la Fecha de Ida.\n👉 Ingresa uno seleccionando el botón Fecha de ida.',
+                                              reply_markup=markupRetornos)
 
 
             else:
